@@ -22,7 +22,9 @@ play dependencies --sync --clearcache --%test
 play secret
 echo "You need to configure the Admin Account"
 echo "Point your web browser at http://localhost:9000"
-play run
+echo "May take a few minutes for service to come up"
+echo "Tail the log: tail -f /home/vagrant/Vireo/logs/application.log"
+play run /home/vagrant/Vireo
 echo ""
 echo "To run as service: play start $(pwd)"
 echo "To stop service: play stop $(pwd)"
