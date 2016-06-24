@@ -1,0 +1,6 @@
+# Basic ignore stuff
+*.swp
+*~
+*.log
+.vagrant
+\#*\#
