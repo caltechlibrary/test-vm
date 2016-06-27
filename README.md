@@ -26,7 +26,18 @@ This is a Vagrant repo for bring up a test instance of Vireo ETD software.
 2. Clone playframework and Vireo from Github
 3. Build play1/framework with Ant
 4. Build Vireo with Play
+5. Configure Vireo
+    + You will need to setup the database and DB user in Postgres
+        + sudo -u postgres createuser -dSRP vireo
+        + sudo -u postgres createdb -U vireo -h localhost vireo
+    + You will also need to edit the conf/application.conf appropiately
+        + Set hostname for app (usually localhost if testing) 
+        + Set DB connection (db hostname, db user/password, database name)
 5. "Run" Play on Vireo so that initial user gets created
-6. After that Vireo can be "played" as a service with start, pid and stop
+    + play run /home/vagrant/Vireo
+7. After that Vireo can be "played" as a service with start, pid and stop
+    + play start /home/vagrant/Vireo
+    + play pid /home/vagrant/Vireo
+    + play stop /home/vagrant/Vireo
 
 
