@@ -49,37 +49,11 @@ Vagrant.configure(2) do |config|
   # Install baseline software
   #
   config.vm.provision "shell", inline: <<-SHELL
-    # Setup the base system with development tools
-    sudo apt-get install build-essential git curl zip unzip postgresql postgresql-contrib default-jdk ant ant-optional ivy ivyplusplus doxygen -y
-    export HOME=/home/vagrant
-    cd $HOME
-
-    # Fetch and compile play 1.3.4
-    git clone https://github.com/playframework/play1.git
-    cd play1
-    git checkout 1.3.4
-    cd framework
-    ant
-    cd ../..
-    # Add play to the path
-    export PATH=$PATH:$HOME/play1
-    echo "export PATH=$PATH" >> $HOME/.profile
-
-    # Fetch and compile Vireo v3.0.6
-    git clone https://github.com/TexasDigitalLibrary/Vireo.git
-    cd Vireo
-    git checkout v3.0.6
-    cd $HOME
-
-    echo "Copying install script and updating ownership"
-    chown -R vagrant:vagrant $HOME
-
     echo ""
     echo "Finish setup: "
     echo ""
     echo "   vagrant ssh"
     echo "   bash /vagrant/setup-vireo.sh"
-    echo "   play run /home/vagrant/Verio"
     echo ""
   SHELL
 end
