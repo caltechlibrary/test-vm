@@ -50,10 +50,15 @@ Vagrant.configure(2) do |config|
   #
   config.vm.provision "shell", inline: <<-SHELL
     echo ""
-    echo "Finish setup: "
+    echo " Finish setup"
     echo ""
     echo "   vagrant ssh"
+    echo ""
+    echo " and run"
+    echo ""
     echo "   bash /vagrant/setup-vireo.sh"
+    echo " or"
+    echo "   bash /vagrant/setup-eprints.sh"
     echo ""
   SHELL
 end

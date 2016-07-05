@@ -48,9 +48,22 @@ function setupStep2 {
     exit 0
 }
 
+function fetchEPrints {
+    # clone EPrints into the local /home/eprints directory
+    if [ -d "$HOME/eprints3" ]; then
+        echo "EPrints appears to be installed already"
+    else 
+        cd 
+        git clone https://github.com/eprints/eprints eprints3
+        cd eprints3
+        git checkout 3.3
+        ./configure --prefix=$HOME
+    fi
+}
+
 function setupEPrintsRepository {
     # Move to the eprints installation location
-    cd
+    cd $HOME/eprints3
     echo "EPrints installed in directory: "$(pwd)
     # create your first repository
     ./bin/epadmin create
@@ -102,6 +115,7 @@ function addEPrintsDependencies {
 # tetex-base is replaced with texlive-base
 # gs is replaced with ghostcript
     sudo apt install apache2 libapache2-mod-perl2 libapache2-mpm-itk \
+        mysql-server \
         libxml-libxml-perl libunicode-string-perl \
         libterm-readkey-perl libmime-lite-perl libdbd-mysql-perl libxml-parser-perl \
         gzip tar unzip make lynx wget ncftp ftp \
@@ -113,7 +127,8 @@ function setupEPrintsUser {
     EPRINTS_USER=$(grep "eprints" /etc/passwd)
     if [ "$EPRINTS_USER" = "" ]; then
         echo "Creating eprints user and setting up groups"
-        sudo adduser --system --home /opt/eprints3 --group eprints
+        #sudo adduser --system --home /opt/eprints3 --group eprints
+        sudo adduser eprints
         sudo adduser www-data eprints
     echo
         echo "eprints user previously created $EPRINTS_USER"
@@ -141,6 +156,7 @@ case $1 in
     #
     assertUsername eprints "Step 2 should run as user eprints under vagrant, try: sudo su eprints"
     echo "Starting setup step 2"
+    fetchEPrints
     setupEPrintsRepository
     setupStep3
 
