@@ -24,7 +24,7 @@ function assertUsername {
 # Setup MySQL appropriately
 #
 function setupMySQL {
-    echo "Setup MySQL? [Y/n]"
+    echo "Setup and secure MySQL? [Y/n] (If Vireo is already setup, you can skip this)"
     read Y_OR_N
 
     if [ "$Y_OR_N" = "" ] || [ "$Y_OR_N" = "y" ] || [ "$Y_OR_N" = "Y" ]; then
@@ -39,13 +39,11 @@ function setupMySQL {
 function setupStep2 {
     EPRINTS_HOME=$(grep eprints /etc/passwd | cut -d : -f 6)
     # Add vagrant to the eprints user group as a convienence
-    sudo cp sbin/2-final-setup.sh $EPRINTS_HOME/
-    sudo chown eprints.eprints $EPRINTS_HOME/2-final-setup.sh
-    echo "become the eprints user, run $EPRINTS_HOME/2-final-setup.sh"
+    echo "become the eprints user, run /vagrant/setup-eprints.sh 2"
     echo "E.g."
     echo "    sudo su eprints"
     echo "    cd"
-    echo "    bash $EPRINTS_HOME/2-final-setup.sh"
+    echo "    bash /vagrant/setup-eprints.sh 2"
     echo ""
     exit 0
 }
@@ -63,9 +61,9 @@ function setupEPrintsRepository {
 function setupStep3 {
     echo ""
     echo "Exit session and return to the vagrant user."
-    echo "Then run sbin/3-final-setup.sh, E.g."
+    echo "Then run /vagrant/setup-eprints.sh 3, E.g."
     echo "    exit"
-    echo "    bash sbin/3-final-setup.sh"
+    echo "    bash /vagrant/setup-eprints.sh 3"
     exit 0
 }
 
@@ -98,13 +96,32 @@ function reportIPForHostSetup {
 }
 
 function addEPrintsDependencies {
-    sudo apt install apach2-mpm-prefork libapache2-mod-perl2 \
+# Changes to the Debian install suggestions at https://wiki.eprints.org/w/Installing_EPrints_3_on_Debian
+# xv is no longer included with Debian/Ubuntu, not sure why it is suggested for E-Prints
+# apach2-mpm-prefork is replaced with apache2 and libapache2-mpm-itk
+# tetex-base is replaced with texlive-base
+# gs is replaced with ghostcript
+    sudo apt install apache2 libapache2-mod-perl2 libapache2-mpm-itk \
         libxml-libxml-perl libunicode-string-perl \
         libterm-readkey-perl libmime-lite-perl libdbd-mysql-perl libxml-parser-perl \
         gzip tar unzip make lynx wget ncftp ftp \
-        gs xpdf xv antiword elinks \
-        pdftk tetex-bin psutils imagemagick -y
+        ghostscript xpdf antiword elinks \
+        pdftk texlive-base psutils imagemagick -y
 }
+
+function setupEPrintsUser {
+    EPRINTS_USER=$(grep "eprints" /etc/passwd)
+    if [ "$EPRINTS_USER" = "" ]; then
+        echo "Creating eprints user and setting up groups"
+        sudo adduser --system --home /opt/eprints3 --group eprints
+        sudo adduser www-data eprints
+    echo
+        echo "eprints user previously created $EPRINTS_USER"
+    fi
+}
+
+# Make sure we are in the $HOME for the current user logged in
+cd
 
 case $1 in
     1)
@@ -114,11 +131,11 @@ case $1 in
     assertUsername vagrant "Step 1 should run as a user vagrant, try: 'vagrant ssh' from your host machine."
     echo "Starting setup step 1"
     addEPrintsDependencies
-    #setupMySQL
-    #setupStep2
+    setupEPrintsUser
+    setupMySQL
+    setupStep2
     ;;
     2)
-
     #
     # Sequence 2 as eprints user 
     #
@@ -132,7 +149,6 @@ case $1 in
     sudo systemctl enable httpd.service
     ;;
     3)
-
     #
     # Sequence 3 as vagrant user again.
     #
@@ -142,6 +158,7 @@ case $1 in
     reportIPForHostSetup
     ;;
     *)
+    # Default, explain how this script works.
     cat <<EOM
  USAGE: bash setup-eprints STEP_NO
 

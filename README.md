@@ -50,13 +50,16 @@ providing the step number you're on.
 
 ```
     # As vagrant user
-    bash setup-eprints.sh 1
+    bash /vagrant/setup-eprints.sh 1
     # eprints user
     sudo su eprints
-    bash setup-eprints.sh 2
+    bash /vagrant/setup-eprints.sh 2
     exit
     # As vagrant user again
-    bash setup-eprints.sh 3
+    bash /vagrant/setup-eprints.sh 3
 ```
 
+#### EPrints reference links
+
++ [Installing EPrints 3 on Debian](https://wiki.eprints.org/w/Installing_EPrints_3_on_Debian)
 
