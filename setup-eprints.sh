@@ -48,27 +48,37 @@ function setupStep2 {
     exit 0
 }
 
-function fetchEPrints {
+function setupEPrintsRepository {
+    cd $HOME
     # clone EPrints into the local /home/eprints directory
     if [ -d "$HOME/eprints3" ]; then
         echo "EPrints appears to be installed already"
     else 
-        cd 
-        git clone https://github.com/eprints/eprints eprints3
-        cd eprints3
+        git clone https://github.com/eprints/eprints src/eprints
+        cd src/eprints
+        git fetch origin
         git checkout 3.3
-        ./configure --prefix=$HOME
+        autoreconf --install
+        ./configure --prefix=$HOME/eprints3
+        make
+        make install
     fi
-}
 
-function setupEPrintsRepository {
     # Move to the eprints installation location
-    cd $HOME/eprints3
-    echo "EPrints installed in directory: "$(pwd)
-    # create your first repository
-    ./bin/epadmin create
-    echo "Hopefully you have created your first repository succeessfully."
-    echo "Remember the virtual hostname you entered for later."
+    if [ -f "$HOME/eprints3/bin/epadmin" ]; then
+        cd $HOME/eprints3
+        echo "EPrints installed in directory: "$(pwd)
+        # create your first repository
+        ./bin/epadmin create
+        echo "Hopefully you have created your first repository succeessfully."
+        echo "Remember the virtual hostname you entered for later."
+    else
+        echo "Install for EPrints in $HOME/eprints3 failed."
+    fi
+    echo "DEBUG need to figure out EPrints and Apache under Ubuntu 16.04 LTS"
+    # restart apache
+    #sudo systemctl restart httpd.service
+    #sudo systemctl enable httpd.service
 }
 
 function setupStep3 {
@@ -114,8 +124,10 @@ function addEPrintsDependencies {
 # apach2-mpm-prefork is replaced with apache2 and libapache2-mpm-itk
 # tetex-base is replaced with texlive-base
 # gs is replaced with ghostcript
-    sudo apt install apache2 libapache2-mod-perl2 libapache2-mpm-itk \
+    sudo apt install build-essential git curl zip unzip \
+        autotools-dev m4 autoconf autoconf-archive automake autoproject texi2html \
         mysql-server \
+        apache2 libapache2-mod-perl2 libapache2-mpm-itk \
         libxml-libxml-perl libunicode-string-perl \
         libterm-readkey-perl libmime-lite-perl libdbd-mysql-perl libxml-parser-perl \
         gzip tar unzip make lynx wget ncftp ftp \
@@ -130,6 +142,7 @@ function setupEPrintsUser {
         #sudo adduser --system --home /opt/eprints3 --group eprints
         sudo adduser eprints
         sudo adduser www-data eprints
+        sudo adduser eprints sudo
     echo
         echo "eprints user previously created $EPRINTS_USER"
     fi
@@ -147,7 +160,7 @@ case $1 in
     echo "Starting setup step 1"
     addEPrintsDependencies
     setupEPrintsUser
-    setupMySQL
+    #setupMySQL
     setupStep2
     ;;
     2)
@@ -156,13 +169,8 @@ case $1 in
     #
     assertUsername eprints "Step 2 should run as user eprints under vagrant, try: sudo su eprints"
     echo "Starting setup step 2"
-    fetchEPrints
     setupEPrintsRepository
     setupStep3
-
-    # restart apache
-    sudo systemctl restart httpd.service
-    sudo systemctl enable httpd.service
     ;;
     3)
     #
