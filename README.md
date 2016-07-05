@@ -2,6 +2,8 @@
 # Vireo test vm
 
 This is a Vagrant repo for bring up a test instance of Vireo ETD software.
+It includes the option of installing [E-Prints](http://eprints.org) to test
+and identify integration issues.
 
 ## Requirements under Ubuntu 16.04 LTS
 
@@ -20,7 +22,7 @@ This is a Vagrant repo for bring up a test instance of Vireo ETD software.
     + playframework 1.3.4
     + Vireo 3.0.6
 
-## Notes
+## Vireo Notes
 
 1. Install the debian packages
 2. Clone playframework and Vireo from Github
@@ -39,5 +41,22 @@ This is a Vagrant repo for bring up a test instance of Vireo ETD software.
     + play start /home/vagrant/Vireo
     + play pid /home/vagrant/Vireo
     + play stop /home/vagrant/Vireo
+
+
+### EPrints Notes
+
+Installing EPrints is a three step process.  You run the same script each time
+providing the step number you're on.
+
+```
+    # As vagrant user
+    bash setup-eprints.sh 1
+    # eprints user
+    sudo su eprints
+    bash setup-eprints.sh 2
+    exit
+    # As vagrant user again
+    bash setup-eprints.sh 3
+```
 
 
