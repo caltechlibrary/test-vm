@@ -126,7 +126,7 @@ function addEPrintsDependencies {
 # gs is replaced with ghostcript
     sudo apt install build-essential git curl zip unzip \
         autotools-dev m4 autoconf autoconf-archive automake autoproject texi2html \
-        mysql-server \
+        mysql-server libmysql-java \
         apache2 libapache2-mod-perl2 libapache2-mpm-itk \
         libxml-libxml-perl libunicode-string-perl \
         libterm-readkey-perl libmime-lite-perl libdbd-mysql-perl libxml-parser-perl \

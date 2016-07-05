@@ -42,8 +42,14 @@ and identify integration issues.
     + play pid /home/vagrant/Vireo
     + play stop /home/vagrant/Vireo
 
+### Vireo reference links
 
-### EPrints Notes
++ [Vireo Install](https://github.com/TexasDigitalLibrary/Vireo/wiki/Install) - Claims it has been tested with MySQL 5.5
++ [MySQL/JDBC Setup under Ubuntu](https://help.ubuntu.com/community/JDBCAndMySQL)
++ [Configuring Vireo 2.0](http://www.scottphillips.com/2012/12/configuring-vireo-2-0/) - Talks about MySQL configuration
++ [Jarrow, Electronic Thesis, and Dissertation Software](http://journal.code4lib.org/articles/7486) - old article survey ETD package options
+
+## EPrints Notes
 
 Installing EPrints is a three step process.  You run the same script each time
 providing the step number you're on.
@@ -61,5 +67,6 @@ providing the step number you're on.
 
 #### EPrints reference links
 
-+ [Installing EPrints 3 on Debian](https://wiki.eprints.org/w/Installing_EPrints_3_on_Debian)
++ [Installing EPrints](http://wiki.eprints.org/w/Installation) - basic installation guide
++ [Installing EPrints 3 on Debian](https://wiki.eprints.org/w/Installing_EPrints_3_on_Debian) - legacy docs for Debian/Ubuntu (very stale)
 
