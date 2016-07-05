@@ -24,7 +24,7 @@ function assertUsername {
 # Setup MySQL appropriately
 #
 function setupMySQL {
-    echo "Setup and secure MySQL? [Y/n] (If Vireo is already setup, you can skip this)"
+    echo "Setup and secure MySQL? [Y/n]"
     read Y_OR_N
 
     if [ "$Y_OR_N" = "" ] || [ "$Y_OR_N" = "y" ] || [ "$Y_OR_N" = "Y" ]; then
@@ -57,7 +57,7 @@ function setupEPrintsRepository {
         git clone https://github.com/eprints/eprints src/eprints
         cd src/eprints
         git fetch origin
-        git checkout 3.3
+        git checkout v3.3.15
         autoreconf --install
         ./configure --prefix=$HOME/eprints3
         make
@@ -93,11 +93,11 @@ function setupStep3 {
 function fixPermissions {
     EPRINTS_HOME=$(grep eprints /etc/passwd | cut -d : -f 6)
     # fix perms
-    sudo chmod -R 770 $EPRINTS_HOME/var/
-	sudo chcon -R -h -t httpd_sys_script_rw_t $EPRINTS_HOME/var/
-    sudo chmod -R 770 $EPRINTS_HOME/lib/
-    sudo chcon -R -h -t httpd_sys_script_rw_t $EPRINTS_HOME/lib/
-    cd $EPRINTS_HOME
+    sudo chmod -R 770 $EPRINTS_HOME/eprints3/var/
+    sudo chcon -R -h -t httpd_sys_script_rw_t $EPRINTS_HOME/eprints3/var/
+    sudo chmod -R 770 $EPRINTS_HOME/eprints/lib/
+    sudo chcon -R -h -t httpd_sys_script_rw_t $EPRINTS_HOME/eprints3/lib/
+    cd $EPRINTS_HOME/eprints
     find archives/ -maxdepth 1 -type d | while read ITEM; do
         if [ "$ITEM" != "archives/" ]; then
             echo "Updating settings for "$ITEM"/documents"
@@ -124,10 +124,14 @@ function addEPrintsDependencies {
 # apach2-mpm-prefork is replaced with apache2 and libapache2-mpm-itk
 # tetex-base is replaced with texlive-base
 # gs is replaced with ghostcript
-    sudo apt install build-essential git curl zip unzip \
+    sudo apt-get install build-essential git curl zip unzip \
         autotools-dev m4 autoconf autoconf-archive automake autoproject texi2html \
         mysql-server libmysql-java \
         apache2 libapache2-mod-perl2 libapache2-mpm-itk \
+        libyaml-libyaml-perl libcpan-perl-releases-perl libjson-perl libapache2-mod-perl2-dev \
+        libdbi-perl libcgi-xml-perl libxml-namespace-perl libxml-sax-perl libxml-sax-base-perl \
+        libxml-sax-writer-perl libxml-simple-perl libxml-dom-perl libxml-libxslt-perl \
+        libmime-types-perl libmime-lite-perl libunicode-string-perl libterm-readkey-perl \
         libxml-libxml-perl libunicode-string-perl \
         libterm-readkey-perl libmime-lite-perl libdbd-mysql-perl libxml-parser-perl \
         gzip tar unzip make lynx wget ncftp ftp \
@@ -138,11 +142,13 @@ function addEPrintsDependencies {
 function setupEPrintsUser {
     EPRINTS_USER=$(grep "eprints" /etc/passwd)
     if [ "$EPRINTS_USER" = "" ]; then
+        echo ""
         echo "Creating eprints user and setting up groups"
         #sudo adduser --system --home /opt/eprints3 --group eprints
         sudo adduser eprints
         sudo adduser www-data eprints
         sudo adduser eprints sudo
+        echo ""
     echo
         echo "eprints user previously created $EPRINTS_USER"
     fi
@@ -158,9 +164,9 @@ case $1 in
     #
     assertUsername vagrant "Step 1 should run as a user vagrant, try: 'vagrant ssh' from your host machine."
     echo "Starting setup step 1"
+    #setupMySQL
     addEPrintsDependencies
     setupEPrintsUser
-    #setupMySQL
     setupStep2
     ;;
     2)
