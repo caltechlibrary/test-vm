@@ -29,6 +29,8 @@ Vagrant.configure(2) do |config|
   # forward PostgreSQL port
   # forward Play Framework service port
   config.vm.network "forwarded_port", guest:9000, host:9000
+  # forward EPrints/Apache
+  config.vm.network "forwarded_port", guest:80, host:8080
 
   #
   # Customize the CPU, Ram and Video memory
