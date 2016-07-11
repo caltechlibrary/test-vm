@@ -32,6 +32,11 @@ Vagrant.configure(2) do |config|
   # forward EPrints (Apache/NginX)
   config.vm.network "forwarded_port", guest:80, host:8000
   config.vm.network "forwarded_port", guest: 443, host: 8443
+  # forward for Fedora4
+  #
+  #config.vm.network :forwarded_port, guest: 8080, host: 8080 # Tomcat
+  config.vm.network :forwarded_port, guest: 9080, host: 9080 # Fixity and Reindexing
+
 
   #
   # Customize the CPU, Ram and Video memory
@@ -63,6 +68,7 @@ Vagrant.configure(2) do |config|
     echo "+ bash /vagrant/setup-archivesspace.sh"
     echo "+ bash /vagrant/setup-loris-imageserver.sh"
     echo "+ bash /vagrant/setup-vireo.sh"
+    echo "+ bash /vagrant/setup-fedora4.sh"
     echo ""
   SHELL
 end
