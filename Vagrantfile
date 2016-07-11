@@ -56,11 +56,11 @@ Vagrant.configure(2) do |config|
     echo ""
     echo "   vagrant ssh"
     echo ""
-    echo " and run"
+    echo " and run the desired setup script."
     echo ""
-    echo "   bash /vagrant/setup-vireo.sh"
-    echo " or"
-    echo "   bash /vagrant/setup-eprints.sh"
+    #echo " + bash /vagrant/setup-archivesspace.sh"
+    echo " + bash /vagrant/setup-eprints.sh"
+    echo " + bash /vagrant/setup-vireo.sh"
     echo ""
   SHELL
 end
