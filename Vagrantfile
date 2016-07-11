@@ -14,23 +14,24 @@ Vagrant.configure(2) do |config|
   #
 
   # forward the public admin site
-  #config.vm.network "forwarded_port", guest: 8080, host: 8080
+  config.vm.network "forwarded_port", guest: 8080, host: 8080
   # forward the public website
-  #config.vm.network "forwarded_port", guest: 8081, host: 8081
+  config.vm.network "forwarded_port", guest: 8081, host: 8081
   # forward the API
-  #config.vm.network "forwarded_port", guest: 8089, host: 8089
+  config.vm.network "forwarded_port", guest: 8089, host: 8089
   # forward the Solr admin site
-  #config.vm.network "forwarded_port", guest: 8090, host: 8090
+  config.vm.network "forwarded_port", guest: 8090, host: 8090
   # forward NginX
   #config.vm.network "forwarded_port", guest: 80, host: 8000
   #config.vm.network "forwarded_port", guest: 443, host: 8443
   # forward MySQL port
-  #config.vm.network "forwarded_port", guest: 3306, host:3306
+  config.vm.network "forwarded_port", guest: 3306, host:3306
   # forward PostgreSQL port
   # forward Play Framework service port
   config.vm.network "forwarded_port", guest:9000, host:9000
-  # forward EPrints/Apache
-  config.vm.network "forwarded_port", guest:80, host:8080
+  # forward EPrints (Apache/NginX)
+  config.vm.network "forwarded_port", guest:80, host:8000
+  config.vm.network "forwarded_port", guest: 443, host: 8443
 
   #
   # Customize the CPU, Ram and Video memory
@@ -58,6 +59,10 @@ Vagrant.configure(2) do |config|
     echo ""
     echo " and run the desired setup script in /vagrant."
     echo ""
+    echo "+ bash /vagrant/setup-eprints.sh"
+    echo "+ bash /vagrant/setup-archivesspace.sh"
+    echo "+ bash /vagrant/setup-loris-imageserver.sh"
+    echo "+ bash /vagrant/setup-vireo.sh"
     echo ""
   SHELL
 end
