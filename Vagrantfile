@@ -39,7 +39,7 @@ Vagrant.configure(2) do |config|
   config.vm.provider "virtualbox" do |vb|
      # Display the VirtualBox GUI when booting the machine
      vb.gui = false
-  
+
      # Customize the amount of memory on the VM:
      vb.memory = "4096"
      vb.cpus = 4
@@ -56,11 +56,8 @@ Vagrant.configure(2) do |config|
     echo ""
     echo "   vagrant ssh"
     echo ""
-    echo " and run the desired setup script."
+    echo " and run the desired setup script in /vagrant."
     echo ""
-    #echo " + bash /vagrant/setup-archivesspace.sh"
-    echo " + bash /vagrant/setup-eprints.sh"
-    echo " + bash /vagrant/setup-vireo.sh"
     echo ""
   SHELL
 end
