@@ -4,3 +4,9 @@
 *.log
 .vagrant
 \#*\#
+
+# Project ignore
+*.zip
+*.tar.gz
+msttcorefonts/*
+*.sql

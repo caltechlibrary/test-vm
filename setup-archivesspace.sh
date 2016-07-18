@@ -1,25 +1,7 @@
 #!/bin/bash
 #
+REVISION="v1.4.2"
 
-#
-# Basic Configuration
-#
-export ARCHIVESSPACE_REVISION="v1.5.0-RC2"
-export ARCHIVESSPACE_INSTALL_DIRECTORY="/home/$USER/archivesspace-$ARCHIVESSPACE_REVISION"
-
-#
-# Base Setup
-#
-function baseSetup() {
-    sudo apt-get update -y
-    sudo apt install build-essential git curl zip unzip \
-        mysql-server libmysql-java \
-        default-jdk ant ant-optional maven -y
-}
-
-#
-# Below should remain the same for supported versions
-#
 function assertUsername {
     USERNAME=$1
     ERROR_MSG=$2
@@ -39,34 +21,44 @@ function assertUsername {
     fi
 }
 
-function setupUsers {
-    sudo adduser archivesspace
-    sudo usermod -G vagrant,archivesspace vagrant
+function setupUsers() {
+    sudo adduser --system archivesspace
+    sudo addgroup archivesspace
+    sudo adduser archivesspace archivesspace
+    sudo adduser vagrant archivesspace
+    echo "Groups archivesspace"
+    groups archivesspace
+    echo "Gourps vagrant"
+    groups vagrant
 }
 
 #
 # Setup MySQL appropriately
 #
 function setupMySQL {
-    cd
     echo "Setup MySQL? [Y/n]"
     read Y_OR_N
 
     if [ "$Y_OR_N" = "" ] || [ "$Y_OR_N" = "y" ] || [ "$Y_OR_N" = "Y" ]; then
+        cd /vagrant/
+        echo "Working directory now $(pwd)"
         echo "Setting up MySQL users and creating database"
-        sudo systemctl start mysqld.service
-        touch archivesspace-mysql-setup.sql
-        echo "CREATE DATABASE archivesspace DEFAULT CHARACTER SET utf8;" >> archivesspace-mysql-setup.sql
-        echo "GRANT ALL ON archivesspace.* TO 'as'@'localhost' IDENTIFIED BY 'as123';" >> archivesspace-mysql-setup.sql
-        echo "FLUSH PRIVILEGES;" >> archivesspace-mysql-setup.sql
+        if [ -f archivesspace-mysql-setup.sql ]; then
+            /bin/rm archivesspace-mysql-setup.sql
+        fi
+        cat <<EOT > archivesspace-mysql-setup.sql
+CREATE DATABASE IF NOT EXISTS archivesspace DEFAULT CHARACTER SET utf8;
+GRANT ALL ON archivesspace.* TO 'as'@'localhost' IDENTIFIED BY 'as123';
+FLUSH PRIVILEGES;
+EOT
+        echo "Loading the setup SQL"
         sudo mysql < archivesspace-mysql-setup.sql
         echo "Running the ArchivesSpace setup-database.sh script"
-        cd $ARCHIVESSPACE_INSTALL_DIRECTORY/archivesspace
+        cd /archivesspace/$REVISION/archivesspace/
+        echo "Working directory now $(pwd)"
         bash scripts/setup-database.sh
-        cd
         # Now make things more secure.
         #sudo mysql_secure_installation
-        sudo systemctl enable mysqld.service
     else
         echo "Skipping MySQL setup."
     fi
@@ -75,48 +67,51 @@ function setupMySQL {
 #
 # Setup ArchivesSpace
 #
-function setupArchivesSpace {
+function setupArchivesSpace() {
     # See https://www.youtube.com/watch?v=peRcBYqJHGc&index=19&list=PLJFitFaE9AY_DDlhl3Kq_vFeX27F1yt6I
     # for Video tutorial for similar steps on Cent OS 6.x
     echo "Adding archivesspace."
-    REVISION="$ARCHIVESSPACE_REVISION"
     RELEASE_URL="https://github.com/archivesspace/archivesspace/releases/download/$REVISION/archivesspace-$REVISION.zip"
     ZIP_FILE="/vagrant/archivesspace-$REVISION.zip"
     if [ -f "$ZIP_FILE" ]; then
         echo "Using existing $ZIP_FILE"
     else
-        echo "Grabbing the ArchivesSpace $REVISION (current stable) release."
+        echo "Grabbing the ArchivesSpace $REVISION (current stable) release saving as $ZIP_FILE."
         echo "$RELEASE_URL"
-        curl -L -k -O --url $RELEASE_URL
+        curl -L -k -o "$ZIP_FILE" --url $RELEASE_URL
     fi
-    if [ ! -d "$ARCHIVESSPACE_INSTALL_DIRECTORY" ]; then
-        sudo mkdir -p "$ARCHIVESSPACE_INSTALL_DIRECTORY"
-    fi
-    cd $ARCHIVESSPACE_INSTALL_DIRECTORY/
+    echo "Making /archivesspace/$REVISION"
+    sudo mkdir -p /archivesspace/$REVISION
+    echo "Updating ownership /archivesspace"
+    sudo chown -R vagrant:archivesspace /archivesspace
+    echo "Changing to new directory"
+    cd /archivesspace/$REVISION
+    echo "Working directory $(pwd)"
     echo "Unpacking $ZIP_FILE"
-    sudo unzip $ZIP_FILE
+    unzip $ZIP_FILE
     echo "Copy in MySQL Java connection."
-    cd $ARCHIVESSPACE_INSTALL_DIRECTORY/archivesspace/lib
+    cd /archivesspace/$REVISION/archivesspace/lib
+    echo "Working directory is now $(pwd)"
     sudo curl -Oq http://central.maven.org/maven2/mysql/mysql-connector-java/5.1.35/mysql-connector-java-5.1.35.jar
     # Setup MySQL connector for use with ArchivesSpace
     # Update config/config.rb
-    cd $ARCHIVESSPACE_INSTALL_DIRECTORY/archivesspace
-    sudo chown $USER config/config.rb
-    echo 'AppConfig[:db_url] = "jdbc:mysql://localhost:3306/archivesspace?user=as&password=as123&useUnicode=true&characterEncoding=UTF-8"' >> config/config.rb
-    echo 'AppConfig[:compile_jasper] = true' >> config/config.rb
-    echo 'AppConfig[:enable_jasper] = true' >> config/config.rb
+    cd /archivesspace/$REVISION/archivesspace
+    echo "Working directory is now $(pwd)"
+    sudo chown $USER /archivesspace/$REVISION/archivesspace/config/config.rb
+    cat <<EOT >> /archivesspace/$REVISION/archivesspace/config/config.rb
 
-    echo "Update ownership to be archivesspace user."
-    sudo chown -R archivesspace.archivesspace $ARCHIVESSPACE_INSTALL_DIRECTORY/archivesspace
-    sudo chcon -R -h -t httpd_sys_script_rw_t $ARCHIVESSPACE_INSTALL_DIRECTORY/archivesspace
-    # Finally make ArchivesSpace come up on boot as archivesspace user.
-    sudo ln -s $ARCHIVESSPACE_INSTALL_DIRECTORY/archivesspace/archivesspace.sh /etc/init.d/archivesspace
-    sudo sed --in-place=.original -e "s/ARCHIVESSPACE_USER=/ARCHIVESSPACE_USER=archivesspace/g" $ARCHIVESSPACE_INSTALL_DIRECTORY/archivesspace/archivesspace.sh
+# Our local configuration
+AppConfig[:db_url] = "jdbc:mysql://localhost:3306/archivesspace?user=as&password=as123&useUnicode=true&characterEncoding=UTF-8"
+AppConfig[:compile_jasper] = true
+AppConfig[:enable_jasper] = true
+
+EOT
 }
 
-function setupJasperReportsFonts {
+
+function setupJasperReportsFonts() {
     # Setup Jasper reports Add the TTF fonts required to run them.
-    cd
+    cd /vagrant
     echo "Downloading the TTF fonts"
     curl -O http://thelinuxbox.org/downloads/fonts/msttcorefonts.tar.gz
     echo "Unpacking the TTF fonts"
@@ -128,12 +123,8 @@ function setupJasperReportsFonts {
     sudo fc-cache -fv
 }
 
-function setupFinish {
-    cd
-    mkdir bin
-    cp -v /vagrant/setup/reset-archivesspace.sh bin/
-    cp -vR /vagrant/tests ./
-    sudo chown -R archivesspace $ARCHIVESSPACE_INSTALL_DIRECTORY/archivesspace
+function setupFinish() {
+    sudo chown -R archivesspace:archivesspace /archivesspace
     echo ""
     echo "Web Access:"
     echo "    http://localhost:8089/ -- the backend"
@@ -141,19 +132,26 @@ function setupFinish {
     echo "    http://localhost:8081/ -- the public interface"
     echo "    http://localhost:8090/ -- the Solr admin console"
     echo ""
-    echo "Bring up archivespace by "
+    echo "Start archivespace"
     echo ""
-    echo "    sudo /etc/init.d/archivesspace start"
+    echo "    sudo /archivesspace/v1.4.2/archivesspace/archivesspace.sh"
     echo ""
     echo "And you're ready to create a new repository, load data, and begin development."
     echo ""
+}
+
+function setupUbuntu() {
+    echo "Installing additional Ubuntu 16.04 LTS packages needed"
+    sudo apt-get install build-essential git curl zip unzip \
+         default-jdk ant ant-contrib ant-optional \
+         maven mysql-server libmysql-java  -y
 }
 
 #
 # Main
 #
 assertUsername vagrant "Try: sudo su vagrant"
-baseSetup
+setupUbuntu
 setupUsers
 setupArchivesSpace
 setupMySQL
