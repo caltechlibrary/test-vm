@@ -10,3 +10,4 @@
 *.tar.gz
 msttcorefonts/*
 *.sql
+fedora4-setup/*
