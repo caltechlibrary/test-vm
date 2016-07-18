@@ -57,11 +57,11 @@ Vagrant.configure(2) do |config|
     echo ""
     echo " and run the desired setup script in /vagrant."
     echo ""
-    echo "+ bash /vagrant/setup-eprints.sh"
-    echo "+ bash /vagrant/setup-archivesspace.sh"
-    echo "+ bash /vagrant/setup-loris-imageserver.sh"
-    echo "+ bash /vagrant/setup-vireo.sh"
-    echo "+ bash /vagrant/setup-fedora4.sh"
+    echo "+ /vagrant/setup-eprints.sh"
+    echo "+ /vagrant/setup-archivesspace.sh"
+    echo "+ /vagrant/setup-loris-imageserver.sh"
+    echo "+ /vagrant/setup-vireo.sh"
+    echo "+ /vagrant/setup-fedora4.sh"
     echo ""
   SHELL
 end
